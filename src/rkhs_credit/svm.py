@@ -32,7 +32,7 @@ from rkhs_credit.kernels import Kernel
 from rkhs_credit.numerics import add_jitter, as_2d_float
 
 # Piso para la curvatura eta cuando dos puntos coinciden en el espacio de
-# caracteristicas (eta = 0): ver Ec. (A.??) [eq:smo-eta].
+# caracteristicas (eta = 0): ver Ec. (A.40) [eq:smo-eta].
 ETA_FLOOR = 1e-12
 # Tolerancia relativa para "pegar" un multiplicador a su cota (0 o C_i) y para
 # decidir que un multiplicador es positivo (vector de soporte).
@@ -56,7 +56,7 @@ def _index_sets(alpha: np.ndarray, positive: np.ndarray, upper: np.ndarray):
     """Boolean masks of the index sets I_up and I_low."""
     # I_up  = {t : (y_t = +1, alpha_t < C_t)  o  (y_t = -1, alpha_t > 0)}
     # I_low = {t : (y_t = +1, alpha_t > 0)    o  (y_t = -1, alpha_t < C_t)}
-    # Ec. (A.??) [eq:index-sets].
+    # Ec. (A.33) [eq:index-sets].
     below_upper = alpha < upper
     above_zero = alpha > 0
     up = np.where(positive, below_upper, above_zero)
@@ -67,7 +67,7 @@ def _index_sets(alpha: np.ndarray, positive: np.ndarray, upper: np.ndarray):
 def _violation(errors: np.ndarray, up: np.ndarray, low: np.ndarray):
     """Maximal violating pair (i, j) and the bounds m(alpha), M(alpha)."""
     # i = argmax_{t en I_up} (-E_t),  j = argmin_{t en I_low} (-E_t):
-    # Ec. (A.??) [eq:smo-working-set].
+    # Ec. (A.47) [eq:smo-working-set].
     minus_e = -errors
     i = int(np.argmax(np.where(up, minus_e, -np.inf)))
     j = int(np.argmin(np.where(low, minus_e, np.inf)))
@@ -83,7 +83,7 @@ def smo(
 ) -> SMOResult:
     """Solve the SVM dual with Sequential Minimal Optimization.
 
-    The problem solved is (Ec. (A.??) [eq:svm-dual])::
+    The problem solved is (Ec. (A.26) [eq:svm-dual])::
 
         max_alpha  1^T alpha - 1/2 alpha^T Q alpha,   Q_ij = y_i y_j K_ij
         s.t.       0 <= alpha_i <= upper_i,   y^T alpha = 0.
@@ -115,7 +115,7 @@ def smo(
     positive = y > 0
     alpha = np.zeros(n)
     # Cache de errores sin sesgo, E_t = sum_j alpha_j y_j K_tj - y_t,
-    # Ec. (A.??) [eq:error-cache]. Con alpha = 0 queda E = -y.
+    # Ec. (A.32) [eq:error-cache]. Con alpha = 0 queda E = -y.
     errors = -y.copy()
 
     n_iter = 0
@@ -124,8 +124,8 @@ def smo(
         up, low = _index_sets(alpha, positive, upper)
         i, j, b_low, b_high = _violation(errors, up, low)
         # Las condiciones KKT equivalen a m(alpha) <= b <= M(alpha),
-        # Ec. (A.??) [eq:kkt-interval]; se detiene cuando se cumplen salvo tol,
-        # Ec. (A.??) [eq:smo-stopping].
+        # Ec. (A.34) [eq:kkt-interval]; se detiene cuando se cumplen salvo tol,
+        # Ec. (A.48) [eq:smo-stopping].
         if b_low - b_high <= tol:
             converged = True
             break
@@ -135,26 +135,26 @@ def smo(
         # --- Paso analitico sobre el par (i, j) -------------------------
         # Curvatura a lo largo de la recta factible:
         # eta = K_ii + K_jj - 2 K_ij = ||phi(x_i) - phi(x_j)||^2 >= 0,
-        # Ec. (A.??) [eq:smo-eta].
+        # Ec. (A.40) [eq:smo-eta].
         eta = max(K[i, i] + K[j, j] - 2.0 * K[i, j], ETA_FLOOR)
         s = y[i] * y[j]
-        # Maximo sin restricciones de la parabola: Ec. (A.??) [eq:smo-step].
+        # Maximo sin restricciones de la parabola: Ec. (A.41) [eq:smo-step].
         alpha_j_new = alpha[j] + y[j] * (errors[i] - errors[j]) / eta
         # Extremos [L, H] del segmento factible dentro de la caja:
-        if s < 0:  # y_i != y_j, Ec. (A.??) [eq:smo-box-opposite]
+        if s < 0:  # y_i != y_j, Ec. (A.42) [eq:smo-box-opposite]
             low_end = max(0.0, alpha[j] - alpha[i])
             high_end = min(upper[j], upper[i] + alpha[j] - alpha[i])
-        else:  # y_i == y_j, Ec. (A.??) [eq:smo-box-same]
+        else:  # y_i == y_j, Ec. (A.43) [eq:smo-box-same]
             low_end = max(0.0, alpha[i] + alpha[j] - upper[i])
             high_end = min(upper[j], alpha[i] + alpha[j])
-        # Recorte a la caja: Ec. (A.??) [eq:smo-clip].
+        # Recorte a la caja: Ec. (A.44) [eq:smo-clip].
         alpha_j_new = min(max(alpha_j_new, low_end), high_end)
-        # alpha_i se mueve para conservar y†alpha = 0: Ec. (A.??) [eq:smo-alpha-i].
+        # alpha_i se mueve para conservar y†alpha = 0: Ec. (A.45) [eq:smo-alpha-i].
         alpha_i_new = alpha[i] + s * (alpha[j] - alpha_j_new)
         alpha_i_new = _snap_to_bounds(alpha_i_new, upper[i])
         alpha_j_new = _snap_to_bounds(alpha_j_new, upper[j])
 
-        # Actualizacion O(n) del cache de errores: Ec. (A.??) [eq:smo-error-update].
+        # Actualizacion O(n) del cache de errores: Ec. (A.46) [eq:smo-error-update].
         errors += y[i] * (alpha_i_new - alpha[i]) * K[i] + y[j] * (alpha_j_new - alpha[j]) * K[j]
         alpha[i] = alpha_i_new
         alpha[j] = alpha_j_new
@@ -254,13 +254,13 @@ class KernelSVM:
             raise ValueError(f"KernelSVM is a binary classifier; got classes {self.classes_}.")
         y_signed = np.where(y == self.classes_[1], 1.0, -1.0)
 
-        # Pesos por clase: C_i = C * w_{y_i}, Ec. (A.??) [eq:class-weights].
+        # Pesos por clase: C_i = C * w_{y_i}, Ec. (A.35) [eq:class-weights].
         upper = self.C * self._sample_weights(y)
 
         K = self.kernel.gram(X)
         if self.jitter > 0:
             # K + eps I: vuelve estrictamente concavo cada subproblema de dos
-            # variables (eta >= 2 eps > 0), Ec. (A.??) [eq:jitter-eta].
+            # variables (eta >= 2 eps > 0), Ec. (A.80) [eq:jitter-eta].
             K = add_jitter(K, self.jitter)
 
         result = smo(K, y_signed, upper, tol=self.tol, max_iter=self.max_iter)
@@ -275,18 +275,18 @@ class KernelSVM:
 
         alpha = result.alpha
         # Vectores de soporte: alpha_i > 0. Solo ellos aparecen en f,
-        # Ec. (A.??) [eq:decision-function].
+        # Ec. (A.29) [eq:decision-function].
         is_support = alpha > BOUND_RTOL * upper
         # Vectores de soporte libres (0 < alpha_i < C_i): estan exactamente sobre
-        # el margen, y_i f(x_i) = 1, Ec. (A.??) [eq:kkt-cases].
+        # el margen, y_i f(x_i) = 1, Ec. (A.30) [eq:kkt-cases].
         is_free = is_support & (alpha < upper * (1.0 - BOUND_RTOL))
         if np.any(is_free):
             # Para cada vector libre, b = y_i - sum_j alpha_j y_j K_ij = -E_i,
-            # Ec. (A.??) [eq:bias-free-sv]; se promedia para reducir el error numerico.
+            # Ec. (A.31) [eq:bias-free-sv]; se promedia para reducir el error numerico.
             intercept = float(np.mean(-result.errors[is_free]))
         else:
             # Sin vectores libres, b solo queda acotado al intervalo [m, M] de
-            # Ec. (A.??) [eq:kkt-interval]; se toma el punto medio.
+            # Ec. (A.34) [eq:kkt-interval]; se toma el punto medio.
             intercept = 0.5 * (result.b_low + result.b_high)
 
         self.alpha_ = alpha
@@ -332,7 +332,7 @@ class KernelSVM:
         X = as_2d_float(X, "X")
         if self.support_.size == 0:
             return np.full(X.shape[0], self.intercept_)
-        # Ec. (A.??) [eq:decision-function]: solo intervienen los vectores de soporte.
+        # Ec. (A.29) [eq:decision-function]: solo intervienen los vectores de soporte.
         return self.kernel.gram(X, self.support_vectors_) @ self.dual_coef_ + self.intercept_
 
     def predict(self, X) -> np.ndarray:

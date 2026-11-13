@@ -75,23 +75,23 @@ class KernelPCA:
     # ---------------------------------------------------------------- fit
     def fit(self, X) -> KernelPCA:
         X = as_2d_float(X, "X")
-        K = self.kernel.gram(X)  # simetrica, Ec. (A.??) [eq:symmetrization]
+        K = self.kernel.gram(X)  # simetrica, Ec. (A.78) [eq:symmetrization]
         # Centrado en el espacio de caracteristicas: K~ = H K H,
-        # Ec. (A.??) [eq:centering]. Filas y columnas de K~ suman cero,
-        # Ec. (A.??) [eq:centered-zero-sums].
+        # Ec. (A.57) [eq:centering]. Filas y columnas de K~ suman cero,
+        # Ec. (A.59) [eq:centered-zero-sums].
         K_centered = center_gram(K)
 
-        # Problema de autovalores K~ a = lambda a, Ec. (A.??) [eq:kpca-gram-eigen],
-        # es decir det(K~ - lambda I) = 0, Ec. (A.??) [eq:kpca-char-eq].
+        # Problema de autovalores K~ a = lambda a, Ec. (A.54) [eq:kpca-gram-eigen],
+        # es decir det(K~ - lambda I) = 0, Ec. (A.55) [eq:kpca-char-eq].
         # K~ es simetrica real: autovalores reales y autovectores ortonormales,
-        # Ec. (A.??) [eq:spectral-decomposition]. eigh los devuelve en orden creciente.
+        # Ec. (A.69) [eq:spectral-decomposition]. eigh los devuelve en orden creciente.
         eigenvalues, eigenvectors = linalg.eigh(K_centered)
         order = np.argsort(eigenvalues)[::-1]
         eigenvalues = eigenvalues[order]
         eigenvectors = eigenvectors[:, order]
 
         # Autovalores negativos del orden del redondeo se tratan como cero,
-        # Ec. (A.??) [eq:eig-threshold].
+        # Ec. (A.77) [eq:eig-threshold].
         spectrum = clip_spectrum(eigenvalues, rtol=self.eig_rtol)
         n_positive = int(np.count_nonzero(spectrum))
         if n_positive == 0:
@@ -107,12 +107,12 @@ class KernelPCA:
         self.eigenvalues_ = retained_values
         self.eigenvectors_ = retained_vectors
         # Normalizacion: ||v_k||^2 = lambda_k a_k†a_k = 1  =>  a_k = u_k / sqrt(lambda_k),
-        # Ec. (A.??) [eq:kpca-normalization].
+        # Ec. (A.60) [eq:kpca-normalization].
         self.dual_coef_ = retained_vectors / np.sqrt(retained_values)
-        # Fraccion de varianza explicada: lambda_k / tr(K~), Ec. (A.??) [eq:explained-variance].
+        # Fraccion de varianza explicada: lambda_k / tr(K~), Ec. (A.63) [eq:explained-variance].
         self.explained_variance_ratio_ = retained_values / spectrum.sum()
         # Numero de condicion efectivo de las componentes retenidas,
-        # Ec. (A.??) [eq:effective-cond].
+        # Ec. (A.81) [eq:effective-cond].
         self.condition_number_ = float(retained_values[0] / retained_values[-1])
         return self
 
@@ -123,17 +123,17 @@ class KernelPCA:
         X = as_2d_float(X, "X")
         K_test = self.kernel.gram(X, self.X_fit_)
         # La matriz de kernel de test se centra con la media de train,
-        # Ec. (A.??) [eq:centering-test].
+        # Ec. (A.65) [eq:centering-test].
         K_test_centered = center_gram_test(K_test, self.K_fit_)
-        # z_k(x) = sum_i a_{k,i} k~(x, x_i), Ec. (A.??) [eq:kpca-new-point];
-        # en forma matricial Z = K~_test A, Ec. (A.??) [eq:kpca-test-projection].
+        # z_k(x) = sum_i a_{k,i} k~(x, x_i), Ec. (A.64) [eq:kpca-new-point];
+        # en forma matricial Z = K~_test A, Ec. (A.66) [eq:kpca-test-projection].
         return K_test_centered @ self.dual_coef_
 
     def fit_transform(self, X) -> np.ndarray:
         """Fit and return the projections of the training points."""
         self.fit(X)
         # Para los puntos de train no hace falta recalcular el kernel:
-        # z_k(x_i) = sqrt(lambda_k) u_{k,i}, Ec. (A.??) [eq:kpca-train-projection].
+        # z_k(x_i) = sqrt(lambda_k) u_{k,i}, Ec. (A.61) [eq:kpca-train-projection].
         return self.eigenvectors_ * np.sqrt(self.eigenvalues_)
 
     def _check_is_fitted(self) -> None:

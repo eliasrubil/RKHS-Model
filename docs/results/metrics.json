@@ -13,8 +13,8 @@
   },
   "seed": 42,
   "labels": {
-    "majority": "Trivial: clase mayoritaria (aprobar a todos)",
-    "always_bad": "Trivial: rechazar a todos",
+    "majority": "Clase mayoritaria (aprobar a todos)",
+    "always_bad": "Rechazar a todos",
     "logreg": "Regresión logística",
     "svm": "SVM propia (SMO)",
     "kpca_svm": "Kernel PCA + SVM lineal"
@@ -136,7 +136,7 @@
     "converged": true,
     "kkt_gap": 0.0009763487696707318,
     "dual_objective": 2767.98204020502,
-    "fit_seconds": 0.03734415100007027
+    "fit_seconds": 0.037808369999766
   },
   "sklearn_check": {
     "prediction_agreement": 1.0,
@@ -172,10 +172,10 @@
     "lambda_max": 8.068579795556289,
     "lambda_min": 0.0,
     "numerical_rank": 799,
-    "condition_number": Infinity,
+    "condition_number": null,
     "effective_condition_number": 11047921.33244842,
     "jitter": 0.0,
-    "condition_number_with_jitter": Infinity
+    "condition_number_with_jitter": null
   },
   "sensitive": {
     "age_threshold": 25,
@@ -340,5 +340,5 @@
       }
     }
   },
-  "runtime_seconds": 53.76110857599997
+  "runtime_seconds": 52.87358168400033
 }

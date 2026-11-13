@@ -37,7 +37,7 @@ class CostMatrix:
 
     def class_weight(self) -> dict[int, float]:
         """Class weights that make the training loss mirror the cost matrix."""
-        # Equivocarse con un ejemplo de la clase k cuesta w_k: Ec. (A.??) [eq:class-weights].
+        # Equivocarse con un ejemplo de la clase k cuesta w_k: Ec. (A.35) [eq:class-weights].
         return {1: self.false_negative, 0: self.false_positive}
 
     def total(self, y_true, y_pred) -> float:

@@ -10,6 +10,7 @@ from scipy import optimize
 from sklearn.svm import SVC
 
 from rkhs_credit.kernels import LinearKernel, PolynomialKernel, RBFKernel
+from rkhs_credit.kpca import KernelPCA
 from rkhs_credit.svm import KernelSVM, smo
 
 TOL = 1e-3
@@ -125,6 +126,25 @@ def test_smo_reaches_the_optimum_of_the_dual_qp(rng):
     np.testing.assert_allclose(result.alpha, reference.x, atol=2e-3)
     # El cache de errores es consistente con su definicion E = K (alpha * y) - y.
     np.testing.assert_allclose(result.errors, K @ (result.alpha * y) - y, atol=1e-9)
+
+
+def test_linear_svm_on_all_kernel_pca_components_equals_the_kernel_svm(two_class_data):
+    """Centring invariance: Kernel PCA (all components) + linear SVM == kernel SVM."""
+    X, y, X_new = two_class_data
+    kernel = RBFKernel(0.2)
+    weights = {0: 1.0, 1: 5.0}
+    direct = KernelSVM(kernel, C=1.0, class_weight=weights, tol=1e-5).fit(X, y)
+
+    kpca = KernelPCA(kernel)  # todas las componentes con autovalor positivo
+    scores = kpca.fit_transform(X)
+    two_step = KernelSVM(LinearKernel(), C=1.0, class_weight=weights, tol=1e-5).fit(scores, y)
+
+    np.testing.assert_allclose(
+        two_step.decision_function(kpca.transform(X_new)),
+        direct.decision_function(X_new),
+        atol=1e-3,
+    )
+    assert two_step.dual_objective_ == pytest.approx(direct.dual_objective_, rel=1e-6)
 
 
 def test_class_weights_shift_the_decision_towards_the_expensive_class(two_class_data):

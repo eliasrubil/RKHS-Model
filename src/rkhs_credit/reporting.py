@@ -15,8 +15,8 @@ from pathlib import Path
 import pandas as pd
 
 MODEL_LABELS = {
-    "majority": "Trivial: clase mayoritaria (aprobar a todos)",
-    "always_bad": "Trivial: rechazar a todos",
+    "majority": "Clase mayoritaria (aprobar a todos)",
+    "always_bad": "Rechazar a todos",
     "logreg": "Regresión logística",
     "svm": "SVM propia (SMO)",
 }
@@ -75,8 +75,7 @@ def _tabular(column_spec: str, header: list[str], rows: list[list[str]]) -> str:
 def models_table(test_metrics: Mapping[str, Mapping], labels: Mapping[str, str]) -> str:
     """Test-set comparison of all models."""
     header = [
-        "Modelo", "AUC", r"Recall \emph{bad}", r"Precisión \emph{bad}", "Exactitud",
-        "FN", "FP", "Costo", "Costo/solic.",
+        "Modelo", "AUC", "Recall", "Precisión", "Exactitud", "FN", "FP", "Costo", "Costo/sol.",
     ]  # fmt: skip
     rows = []
     for name, metrics in test_metrics.items():
@@ -93,7 +92,7 @@ def models_table(test_metrics: Mapping[str, Mapping], labels: Mapping[str, str])
                 num(metrics["cost_per_sample"]),
             ]
         )
-    return _tabular("lrrrrrrrr", header, rows)
+    return _tabular("@{}lrrrrrrrr@{}", header, rows)
 
 
 def cv_table(cv_summary: Mapping[str, Mapping], labels: Mapping[str, str]) -> str:
@@ -126,7 +125,7 @@ def sensitive_overall_table(sensitive: Mapping[str, Mapping]) -> str:
     """Model with vs. without sensitive attributes: global metrics and approval gaps."""
     labels = {"with": "Con atributos sensibles", "without": "Sin atributos sensibles"}
     header = [
-        "Modelo", "AUC", r"Recall \emph{bad}", r"Precisión \emph{bad}", "Costo",
+        "Modelo", "AUC", "Recall", "Precisión", "Costo",
         r"$\Delta$ sexo", r"$\Delta$ edad", r"$\Delta$ extranjero",
     ]  # fmt: skip
     rows = []
@@ -223,6 +222,14 @@ def number_macros(results: Mapping) -> str:
         macros[f"Res{prefix}CvAuc"] = num(summary["mean_auc"])
         macros[f"Res{prefix}Params"] = _param_text(summary["best_params"])
 
+    # C lineal equivalente de una SVM gaussiana con gamma chico: C_lin = 2 * gamma * C.
+    svm_params = results["cv"]["svm"]["best_params"]
+    if {"svm.C", "svm.kernel.gamma"} <= set(svm_params):
+        linear_c = 2.0 * svm_params["svm.kernel.gamma"] * svm_params["svm.C"]
+        macros["ResSvmLinearC"] = rf"\num{{{linear_c:.3g}}}"
+    else:
+        macros["ResSvmLinearC"] = "--"
+
     fit = results["svm_fit"]
     macros["ResNSupport"] = integer(fit["n_support"])
     macros["ResNFreeSupport"] = integer(fit["n_free_support"])
@@ -236,7 +243,7 @@ def number_macros(results: Mapping) -> str:
 
     check = results["sklearn_check"]
     macros["ResSkAgreement"] = num(100.0 * check["prediction_agreement"], 1)
-    macros["ResSkCorr"] = num(check["decision_correlation"], 6)
+    macros["ResSkCorr"] = num(check["decision_correlation"], 7)
     macros["ResSkMaxDiff"] = sci(check["max_abs_decision_difference"])
     macros["ResSkNSupport"] = integer(check["n_support_sklearn"])
 
@@ -269,11 +276,22 @@ def number_macros(results: Mapping) -> str:
 
 
 # ------------------------------------------------------------------- writing
+def _json_safe(value):
+    """Replace non-finite floats (not valid JSON) by ``None``, recursively."""
+    if isinstance(value, Mapping):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value
+
+
 def write_outputs(results: Mapping, tables: Mapping[str, pd.DataFrame], results_dir: Path) -> None:
     """Write ``metrics.json``, the CSV tables and every LaTeX snippet."""
     results_dir.mkdir(parents=True, exist_ok=True)
     (results_dir / "metrics.json").write_text(
-        json.dumps(results, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(_json_safe(results), indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     for name, table in tables.items():
         table.to_csv(results_dir / f"{name}.csv", index=name == "test_predictions")

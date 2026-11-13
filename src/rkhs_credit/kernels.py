@@ -49,8 +49,8 @@ class Kernel(ABC):
         X = as_2d_float(X, "X")
         if Y is None:
             # K(X, X) es simetrica semidefinida positiva por definicion de kernel
-            # definido positivo, Ec. (A.??) [eq:pd-kernel]; en punto flotante se
-            # fuerza la simetria con Ec. (A.??) [eq:symmetrization].
+            # definido positivo, Ec. (A.1) [eq:pd-kernel]; en punto flotante se
+            # fuerza la simetria con Ec. (A.78) [eq:symmetrization].
             return symmetrize(self._gram(X, X))
         Y = as_2d_float(Y, "Y")
         if X.shape[1] != Y.shape[1]:
@@ -160,7 +160,7 @@ def build_kernel(spec: Mapping) -> Kernel:
 # ----------------------------------------------------------- base kernels
 def squared_euclidean_distances(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
     """Matrix of squared distances ``D[i, j] = ||X[i] - Y[j]||^2`` (vectorised)."""
-    # ||x - y||^2 = ||x||^2 + ||y||^2 - 2 x†y, Ec. (A.??) [eq:sqdist-expansion].
+    # ||x - y||^2 = ||x||^2 + ||y||^2 - 2 x†y, Ec. (A.82) [eq:sqdist-expansion].
     # La resta sufre cancelacion cuando x ~ y, asi que los valores negativos
     # (del orden del error de redondeo) se recortan a cero.
     x_sq = np.einsum("ij,ij->i", X, X)[:, None]
@@ -184,8 +184,8 @@ class LinearKernel(Kernel):
 
     def _gram(self, X, Y):
         # El producto interno euclideo es el kernel con mapa de caracteristicas
-        # identidad, Ec. (A.??) [eq:feature-kernel]; sumar c >= 0 es sumar el kernel
-        # constante (suma de kernels, Ec. (A.??) [eq:sum-kernel]).
+        # identidad, Ec. (A.2) [eq:feature-kernel]; sumar c >= 0 es sumar el kernel
+        # constante (suma de kernels, Ec. (A.17) [eq:sum-kernel]).
         return X @ Y.T + self.c
 
     def diag(self, X):
@@ -208,7 +208,7 @@ class RBFKernel(Kernel):
     def _gram(self, X, Y):
         # Es definido positivo por la factorizacion
         # exp(-g||x-y||^2) = exp(-g||x||^2) exp(-g||y||^2) exp(2g x†y),
-        # Ec. (A.??) [eq:rbf-factorization].
+        # Ec. (A.20) [eq:rbf-factorization].
         return np.exp(-self.gamma * squared_euclidean_distances(X, Y))
 
     def diag(self, X):
@@ -236,7 +236,7 @@ class PolynomialKernel(Kernel):
 
     def _gram(self, X, Y):
         # Potencia entera de un kernel con coeficientes no negativos: es kernel
-        # por el teorema del producto de Schur, Ec. (A.??) [eq:poly-expansion].
+        # por el teorema del producto de Schur, Ec. (A.19) [eq:poly-expansion].
         return (self.gamma * (X @ Y.T) + self.coef0) ** self.degree
 
     def diag(self, X):
@@ -256,7 +256,7 @@ class SumKernel(Kernel):
         self.right = right
 
     def _gram(self, X, Y):
-        # c†(K1 + K2)c = c†K1 c + c†K2 c >= 0, Ec. (A.??) [eq:sum-kernel].
+        # c†(K1 + K2)c = c†K1 c + c†K2 c >= 0, Ec. (A.17) [eq:sum-kernel].
         return self.left._gram(X, Y) + self.right._gram(X, Y)
 
     def diag(self, X):
@@ -275,7 +275,7 @@ class ProductKernel(Kernel):
 
     def _gram(self, X, Y):
         # La matriz de Gram es el producto de Hadamard K1 o K2, que es semidefinido
-        # positivo por el teorema del producto de Schur, Ec. (A.??) [eq:schur].
+        # positivo por el teorema del producto de Schur, Ec. (A.18) [eq:schur].
         return self.left._gram(X, Y) * self.right._gram(X, Y)
 
     def diag(self, X):
@@ -295,7 +295,7 @@ class ScaledKernel(Kernel):
         self.scale = float(scale)
 
     def _gram(self, X, Y):
-        # c†(aK)c = a c†Kc >= 0 si a >= 0, Ec. (A.??) [eq:sum-kernel].
+        # c†(aK)c = a c†Kc >= 0 si a >= 0, Ec. (A.17) [eq:sum-kernel].
         return self.scale * self.kernel._gram(X, Y)
 
     def diag(self, X):
