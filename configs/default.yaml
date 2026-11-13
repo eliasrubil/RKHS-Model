@@ -1,0 +1,99 @@
+# =============================================================================
+# Configuracion por defecto del proyecto RKHS-Model (German Credit, SVM + Kernel PCA)
+# Todas las rutas son relativas a la raiz del repositorio (desde donde se ejecutan
+# los comandos). Las claves anidadas se nombran con puntos: "svm.kernel.gamma".
+# =============================================================================
+
+seed: 42                       # semilla unica: split train/test y folds de CV
+
+paths:
+  data_dir: data               # cache local del dataset (en .gitignore)
+  results_dir: docs/results    # metricas (JSON/CSV) y tablas LaTeX para el informe
+  figures_dir: docs/figures    # figuras que incluye docs/report.tex
+
+data:
+  openml_name: credit-g
+  openml_version: 1
+  cache_file: credit_g.csv
+  # Fuente alternativa (archivo original de UCI) si OpenML no responde.
+  # Poner null para desactivarla y exigir OpenML.
+  fallback_url: https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data
+  target: class
+  positive_class: bad          # y = 1  <=>  "bad"
+  test_size: 0.2
+  sensitive_features: [personal_status, age, foreign_worker]
+  exclude_sensitive: false     # true: el pipeline descarta los atributos sensibles
+
+# Matriz de costos del dataset (documentacion Statlog).
+cost:
+  false_negative: 5.0          # "bad" clasificado como "good"
+  false_positive: 1.0          # "good" clasificado como "bad"
+
+# SVM de margen suave (implementacion propia, SMO). C y gamma son los valores
+# usados si cv.enabled es false; con CV se reemplazan por los mejores de la grilla.
+svm:
+  C: 1.0
+  kernel:
+    name: rbf                  # linear | rbf | polynomial | sum | product | scaled
+    gamma: 0.01
+  class_weight: cost_matrix    # cost_matrix | balanced | none | {0: w_good, 1: w_bad}
+  tol: 1.0e-3                  # tolerancia en las condiciones KKT
+  max_iter: 200000             # maximo de iteraciones de SMO
+  jitter: 1.0e-8               # se suma a la diagonal de la matriz de Gram de train
+
+# Kernel PCA como etapa opcional entre el preprocesamiento y la SVM.
+kpca:
+  enabled: false
+  n_components: 30             # null = todas las componentes con autovalor positivo
+  kernel:
+    name: rbf
+    gamma: 0.01
+  eig_rtol: 1.0e-10            # autovalores <= eig_rtol * lambda_max se tratan como cero
+
+# Validacion cruzada estratificada sobre train para elegir hiperparametros.
+cv:
+  enabled: true
+  n_splits: 5
+  scoring: cost                # cost (minimiza costo medio) | auc (maximiza AUC)
+  grid:
+    svm.C: [0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0]
+    svm.kernel.gamma: [0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1]
+
+baselines:
+  logistic_regression:
+    C: 1.0
+    class_weight: cost_matrix
+    max_iter: 2000
+    grid:
+      baselines.logistic_regression.C: [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0]
+
+# Modelos adicionales que se entrenan y reportan junto al principal. Cada uno es
+# la configuracion base + "overrides", con su propia grilla de CV.
+variants:
+  kpca_svm:
+    label: "Kernel PCA + SVM lineal"
+    overrides:
+      kpca.enabled: true
+      kpca.n_components: 30
+      svm.kernel: {name: linear}
+    grid:
+      svm.C: [0.1, 0.3, 1.0, 3.0, 10.0]
+      kpca.kernel.gamma: [0.003, 0.01, 0.03]
+
+# Analisis de atributos sensibles: modelo con y sin ellos + metricas por subgrupo.
+sensitive_analysis:
+  enabled: true
+  retune: true                 # repetir la CV para el modelo sin atributos sensibles
+  age_threshold: 25            # grupo "joven": edad <= umbral
+
+figures:
+  formats: [pdf, png]
+  dpi: 200
+  # Kernel PCA de las figuras. Se usa un gamma mayor que el elegido por CV para la
+  # SVM: con gamma muy chico el kernel RBF es casi lineal y Kernel PCA ~ PCA.
+  projection_gamma: 0.03       # null = usar el gamma elegido por CV
+  spectrum_components: 250     # autovalores mostrados en el espectro
+  # SVM entrenada sobre las 2 primeras componentes (solo para la figura).
+  boundary_gamma: 30.0         # gamma del kernel RBF sobre el plano de Kernel PCA
+  boundary_C: 3.0              # null = usar el C elegido por CV
+  boundary_grid_size: 300      # resolucion de la grilla de la frontera

@@ -1,0 +1,9 @@
+\begin{tabular}{llrr}
+\toprule
+Modelo & Hiperparámetros elegidos & Costo CV (media $\pm$ desvío) & AUC CV \\
+\midrule
+Regresión logística & $C = \num{0.1}$ & \num{0.516} $\pm$ \num{0.057} & \num{0.778} \\
+SVM propia (SMO) & $C = \num{3}$, $\gamma = \num{0.003}$ & \num{0.500} $\pm$ \num{0.037} & \num{0.775} \\
+Kernel PCA + SVM lineal & $C = \num{1}$, $\gamma = \num{0.03}$ & \num{0.486} $\pm$ \num{0.032} & \num{0.776} \\
+\bottomrule
+\end{tabular}

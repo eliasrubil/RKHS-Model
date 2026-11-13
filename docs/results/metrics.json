@@ -1,0 +1,344 @@
+{
+  "data": {
+    "source": "openml:credit-g:v1",
+    "n_samples": 1000,
+    "n_train": 800,
+    "n_test": 200,
+    "n_test_bad": 60,
+    "n_test_good": 140,
+    "n_attributes": 20,
+    "n_encoded_features": 61,
+    "bad_rate_train": 0.3,
+    "bad_rate_test": 0.3
+  },
+  "seed": 42,
+  "labels": {
+    "majority": "Trivial: clase mayoritaria (aprobar a todos)",
+    "always_bad": "Trivial: rechazar a todos",
+    "logreg": "Regresión logística",
+    "svm": "SVM propia (SMO)",
+    "kpca_svm": "Kernel PCA + SVM lineal"
+  },
+  "cost_matrix": {
+    "false_negative": 5.0,
+    "false_positive": 1.0
+  },
+  "cv": {
+    "logreg": {
+      "best_params": {
+        "baselines.logistic_regression.C": 0.1
+      },
+      "mean_cost": 0.51625,
+      "std_cost": 0.05654091438949321,
+      "mean_auc": 0.7775297619047619,
+      "n_not_converged": 0
+    },
+    "svm": {
+      "best_params": {
+        "svm.C": 3.0,
+        "svm.kernel.gamma": 0.003
+      },
+      "mean_cost": 0.5,
+      "std_cost": 0.03708099243547831,
+      "mean_auc": 0.7745535714285714,
+      "n_not_converged": 0
+    },
+    "kpca_svm": {
+      "best_params": {
+        "svm.C": 1.0,
+        "kpca.kernel.gamma": 0.03
+      },
+      "mean_cost": 0.48625000000000007,
+      "std_cost": 0.03245188746436792,
+      "mean_auc": 0.7763764880952382,
+      "n_not_converged": 0
+    }
+  },
+  "test": {
+    "majority": {
+      "n": 200,
+      "auc": 0.5,
+      "recall_bad": 0.0,
+      "precision_bad": 0.0,
+      "accuracy": 0.7,
+      "tn": 140,
+      "fp": 0,
+      "fn": 60,
+      "tp": 0,
+      "cost": 300.0,
+      "cost_per_sample": 1.5
+    },
+    "always_bad": {
+      "n": 200,
+      "auc": 0.5,
+      "recall_bad": 1.0,
+      "precision_bad": 0.3,
+      "accuracy": 0.3,
+      "tn": 0,
+      "fp": 140,
+      "fn": 0,
+      "tp": 60,
+      "cost": 140.0,
+      "cost_per_sample": 0.7
+    },
+    "logreg": {
+      "n": 200,
+      "auc": 0.8109523809523809,
+      "recall_bad": 0.8833333333333333,
+      "precision_bad": 0.4274193548387097,
+      "accuracy": 0.61,
+      "tn": 69,
+      "fp": 71,
+      "fn": 7,
+      "tp": 53,
+      "cost": 106.0,
+      "cost_per_sample": 0.53
+    },
+    "svm": {
+      "n": 200,
+      "auc": 0.8125,
+      "recall_bad": 0.9166666666666666,
+      "precision_bad": 0.41353383458646614,
+      "accuracy": 0.585,
+      "tn": 62,
+      "fp": 78,
+      "fn": 5,
+      "tp": 55,
+      "cost": 103.0,
+      "cost_per_sample": 0.515
+    },
+    "kpca_svm": {
+      "n": 200,
+      "auc": 0.7899999999999999,
+      "recall_bad": 0.9,
+      "precision_bad": 0.4153846153846154,
+      "accuracy": 0.59,
+      "tn": 64,
+      "fp": 76,
+      "fn": 6,
+      "tp": 54,
+      "cost": 106.0,
+      "cost_per_sample": 0.53
+    }
+  },
+  "svm_fit": {
+    "kernel": "RBFKernel(gamma=0.003)",
+    "C": 3.0,
+    "class_weight": {
+      "1": 5.0,
+      "0": 1.0
+    },
+    "tol": 0.001,
+    "n_support": 622,
+    "n_free_support": 43,
+    "intercept": 0.3796264533050614,
+    "n_iter": 1155,
+    "converged": true,
+    "kkt_gap": 0.0009763487696707318,
+    "dual_objective": 2767.98204020502,
+    "fit_seconds": 0.03734415100007027
+  },
+  "sklearn_check": {
+    "prediction_agreement": 1.0,
+    "decision_correlation": 0.9999999194182383,
+    "max_abs_decision_difference": 0.0012451857805300115,
+    "n_support_sklearn": 622,
+    "test_metrics_sklearn": {
+      "n": 200,
+      "auc": 0.8123809523809523,
+      "recall_bad": 0.9166666666666666,
+      "precision_bad": 0.41353383458646614,
+      "accuracy": 0.585,
+      "tn": 62,
+      "fp": 78,
+      "fn": 5,
+      "tp": 55,
+      "cost": 103.0,
+      "cost_per_sample": 0.515
+    }
+  },
+  "gram": {
+    "n": 800,
+    "lambda_max": 736.7857166401383,
+    "lambda_min": 7.302418678996837e-07,
+    "numerical_rank": 800,
+    "condition_number": 1008961207.2768108,
+    "effective_condition_number": 1008961207.2768108,
+    "jitter": 1e-08,
+    "condition_number_with_jitter": 995331051.377367
+  },
+  "centered_gram": {
+    "n": 800,
+    "lambda_max": 8.068579795556289,
+    "lambda_min": 0.0,
+    "numerical_rank": 799,
+    "condition_number": Infinity,
+    "effective_condition_number": 11047921.33244842,
+    "jitter": 0.0,
+    "condition_number_with_jitter": Infinity
+  },
+  "sensitive": {
+    "age_threshold": 25,
+    "with": {
+      "best_params": {
+        "svm.C": 3.0,
+        "svm.kernel.gamma": 0.003
+      },
+      "test": {
+        "n": 200,
+        "auc": 0.8125,
+        "recall_bad": 0.9166666666666666,
+        "precision_bad": 0.41353383458646614,
+        "accuracy": 0.585,
+        "tn": 62,
+        "fp": 78,
+        "fn": 5,
+        "tp": 55,
+        "cost": 103.0,
+        "cost_per_sample": 0.515
+      },
+      "groups": {
+        "sex": {
+          "female": {
+            "n": 61,
+            "n_bad": 20,
+            "base_rate_bad": 0.32786885245901637,
+            "approval_rate": 0.2459016393442623,
+            "recall_bad": 0.95,
+            "false_positive_rate": 0.6585365853658537
+          },
+          "male": {
+            "n": 139,
+            "n_bad": 40,
+            "base_rate_bad": 0.28776978417266186,
+            "approval_rate": 0.37410071942446044,
+            "recall_bad": 0.9,
+            "false_positive_rate": 0.5151515151515151
+          }
+        },
+        "age_group": {
+          "<=25": {
+            "n": 44,
+            "n_bad": 20,
+            "base_rate_bad": 0.45454545454545453,
+            "approval_rate": 0.22727272727272727,
+            "recall_bad": 0.95,
+            "false_positive_rate": 0.625
+          },
+          ">25": {
+            "n": 156,
+            "n_bad": 40,
+            "base_rate_bad": 0.2564102564102564,
+            "approval_rate": 0.36538461538461536,
+            "recall_bad": 0.9,
+            "false_positive_rate": 0.5431034482758621
+          }
+        },
+        "foreign_worker": {
+          "no": {
+            "n": 6,
+            "n_bad": 1,
+            "base_rate_bad": 0.16666666666666666,
+            "approval_rate": 0.6666666666666666,
+            "recall_bad": 1.0,
+            "false_positive_rate": 0.2
+          },
+          "yes": {
+            "n": 194,
+            "n_bad": 59,
+            "base_rate_bad": 0.30412371134020616,
+            "approval_rate": 0.3247422680412371,
+            "recall_bad": 0.9152542372881356,
+            "false_positive_rate": 0.5703703703703704
+          }
+        }
+      },
+      "approval_gap": {
+        "sex": 0.12819908008019815,
+        "age_group": 0.1381118881118881,
+        "foreign_worker": 0.3419243986254295
+      }
+    },
+    "without": {
+      "best_params": {
+        "svm.C": 1.0,
+        "svm.kernel.gamma": 0.01
+      },
+      "test": {
+        "n": 200,
+        "auc": 0.8029761904761904,
+        "recall_bad": 0.9,
+        "precision_bad": 0.39705882352941174,
+        "accuracy": 0.56,
+        "tn": 58,
+        "fp": 82,
+        "fn": 6,
+        "tp": 54,
+        "cost": 112.0,
+        "cost_per_sample": 0.56
+      },
+      "groups": {
+        "sex": {
+          "female": {
+            "n": 61,
+            "n_bad": 20,
+            "base_rate_bad": 0.32786885245901637,
+            "approval_rate": 0.29508196721311475,
+            "recall_bad": 0.95,
+            "false_positive_rate": 0.5853658536585366
+          },
+          "male": {
+            "n": 139,
+            "n_bad": 40,
+            "base_rate_bad": 0.28776978417266186,
+            "approval_rate": 0.33093525179856115,
+            "recall_bad": 0.875,
+            "false_positive_rate": 0.5858585858585859
+          }
+        },
+        "age_group": {
+          "<=25": {
+            "n": 44,
+            "n_bad": 20,
+            "base_rate_bad": 0.45454545454545453,
+            "approval_rate": 0.25,
+            "recall_bad": 0.9,
+            "false_positive_rate": 0.625
+          },
+          ">25": {
+            "n": 156,
+            "n_bad": 40,
+            "base_rate_bad": 0.2564102564102564,
+            "approval_rate": 0.33974358974358976,
+            "recall_bad": 0.9,
+            "false_positive_rate": 0.5775862068965517
+          }
+        },
+        "foreign_worker": {
+          "no": {
+            "n": 6,
+            "n_bad": 1,
+            "base_rate_bad": 0.16666666666666666,
+            "approval_rate": 0.3333333333333333,
+            "recall_bad": 1.0,
+            "false_positive_rate": 0.6
+          },
+          "yes": {
+            "n": 194,
+            "n_bad": 59,
+            "base_rate_bad": 0.30412371134020616,
+            "approval_rate": 0.31958762886597936,
+            "recall_bad": 0.8983050847457628,
+            "false_positive_rate": 0.5851851851851851
+          }
+        }
+      },
+      "approval_gap": {
+        "sex": 0.0358532845854464,
+        "age_group": 0.08974358974358976,
+        "foreign_worker": 0.013745704467353959
+      }
+    }
+  },
+  "runtime_seconds": 53.76110857599997
+}

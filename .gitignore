@@ -1,0 +1,32 @@
+# Datos descargados (cache local del dataset)
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+build/
+dist/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# LaTeX (archivos intermedios; el PDF y las figuras si se versionan)
+docs/*.aux
+docs/*.bbl
+docs/*.blg
+docs/*.fdb_latexmk
+docs/*.fls
+docs/*.log
+docs/*.out
+docs/*.toc
+docs/*.synctex.gz
+
+# Sistema / editores
+.DS_Store
+.idea/
+.vscode/

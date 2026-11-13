@@ -1,0 +1,11 @@
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Modelo & AUC & Recall \emph{bad} & Precisión \emph{bad} & Exactitud & FN & FP & Costo & Costo/solic. \\
+\midrule
+Trivial: clase mayoritaria (aprobar a todos) & \num{0.500} & \num{0.000} & \num{0.000} & \num{0.700} & \num{60} & \num{0} & \num{300} & \num{1.500} \\
+Trivial: rechazar a todos & \num{0.500} & \num{1.000} & \num{0.300} & \num{0.300} & \num{0} & \num{140} & \num{140} & \num{0.700} \\
+Regresión logística & \num{0.811} & \num{0.883} & \num{0.427} & \num{0.610} & \num{7} & \num{71} & \num{106} & \num{0.530} \\
+SVM propia (SMO) & \num{0.812} & \num{0.917} & \num{0.414} & \num{0.585} & \num{5} & \num{78} & \num{103} & \num{0.515} \\
+Kernel PCA + SVM lineal & \num{0.790} & \num{0.900} & \num{0.415} & \num{0.590} & \num{6} & \num{76} & \num{106} & \num{0.530} \\
+\bottomrule
+\end{tabular}

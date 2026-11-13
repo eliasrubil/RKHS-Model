@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rkhs-credit"
+version = "0.1.0"
+description = "Credit-risk classification with kernel methods (RKHS): SVM via SMO and Kernel PCA."
+readme = "README.md"
+requires-python = ">=3.12"
+# Las versiones exactas estan fijadas en requirements.txt.
+dependencies = ["numpy", "scipy", "pandas", "scikit-learn", "matplotlib", "PyYAML"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "NPY", "SIM"]
